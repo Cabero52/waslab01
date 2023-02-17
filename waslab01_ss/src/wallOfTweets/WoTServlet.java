@@ -21,7 +21,7 @@ public class WoTServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Locale currentLocale = new Locale("en");
 	String ENCODING = "ISO-8859-1";
-
+	
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -37,6 +37,9 @@ public class WoTServlet extends HttpServlet {
 		try {
 			Vector<Tweet> tweets = Database.getTweets();
 			printHTMLresult(tweets, request, response);
+			if(request.getHeader("Accept").equals("text/plain")) {
+				printPLAINresult();
+			}
 		}
 
 		catch (SQLException ex ) {
@@ -89,4 +92,5 @@ public class WoTServlet extends HttpServlet {
 		}
 		out.println ( "</body></html>" );
 	}
+	
 }
