@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet implementation class WoTServlet
- */
+*/
 @WebServlet("/")
 public class WoTServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -59,13 +59,19 @@ public class WoTServlet extends HttpServlet {
 		String author = request.getParameter("author");
 		String text = request.getParameter("tweet_text");
 		
+		Long id = null;
 		try {
-			Database.insertTweet(author,text);
+			id = Database.insertTweet(author,text);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		response.sendRedirect(request.getContextPath());
+		if(request.getHeader("Accept").equals("text/plain")) {
+			response.getWriter().println(String.valueOf(id));
+		}
+		else {
+			response.sendRedirect(request.getContextPath());
+		}
 	}
 
 	private void printHTMLresult (Vector<Tweet> tweets, HttpServletRequest req, HttpServletResponse res) throws IOException
