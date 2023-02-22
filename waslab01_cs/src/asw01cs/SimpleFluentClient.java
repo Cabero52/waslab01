@@ -20,6 +20,8 @@ public class SimpleFluentClient {
     	System.out.println(Request.Get(URI).addHeader("Accept", "text/plain").execute().returnContent());
     	
     	/* Insert code for Task #5 here */
+    	Request.Post(URI).bodyForm(Form.form().add("id", idR).build())
+    	.addHeader("Accept", "Delete").execute();
     }
 }
 
