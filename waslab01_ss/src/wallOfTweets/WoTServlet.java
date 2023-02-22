@@ -2,6 +2,8 @@ package wallOfTweets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Locale;
@@ -9,6 +11,7 @@ import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,18 +63,54 @@ public class WoTServlet extends HttpServlet {
 		String text = request.getParameter("tweet_text");
 		
 		Long id = null;
-		try {
-			id = Database.insertTweet(author,text);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Cookie[] cookies = request.getCookies();
+		String idU = request.getParameter("id");
+			
+		if(idU == null) {
+			try {
+				id = Database.insertTweet(author,text);
+				response.addCookie(new Cookie("idC", sha256(id.toString())));				//creem nova cookie
+			} 
+			catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		else {
+			for(Cookie c : cookies) {													//busquem la cookie que correspon amb el tweet 
+					if(c.getValue().equals(sha256(idU))) {
+						Database.deleteTweet(Long.parseLong(idU));						//per eliminar el tweet
+					}
+				}
+		}
+		
 		if(request.getHeader("Accept").equals("text/plain")) {
 			response.getWriter().println(String.valueOf(id));
 		}
 		else {
 			response.sendRedirect(request.getContextPath());
 		}
+		
+	}
+
+	private String sha256(String text) {
+		MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance("SHA-256");
+		} 
+		catch (NoSuchAlgorithmException e) {		
+			e.printStackTrace();
+			return null;
+		}
+		    
+		byte[] hash = md.digest(text.getBytes());
+		StringBuffer sb = new StringBuffer();
+		    
+		for(byte b : hash) {        
+			sb.append(String.format("%02x", b));
+		}
+		    
+		return sb.toString();
 	}
 
 	private void printHTMLresult (Vector<Tweet> tweets, HttpServletRequest req, HttpServletResponse res) throws IOException
@@ -119,4 +158,3 @@ public class WoTServlet extends HttpServlet {
 			}
 		}
 	}
-	
